@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient HA1C Averages</title>
+
+    <script>
+        const ajax = (method, url, callback) => {
+            const req = new XMLHttpRequest();
+            req.open(method, url);
+            req.send();
+            req.addEventListener("load", () => callback(JSON.parse(req.responseText)));
+        };
+
+        window.addEventListener("load", () => {
+            const tbody = document.getElementById("patients");
+            ajax("GET", "/patients", (patients) => {
+                patients.forEach(patient => {
+                    ajax("GET", "/patients/" + patient.id + "/visits", (visits) => {
+                        const row = tbody.insertRow();
+                        row.insertCell().appendChild(document.createTextNode(
+                            patient.first_name + " " + patient.last_name
+                        ));
+                        row.insertCell().appendChild(document.createTextNode(
+                            (visits.reduce((sum, visit) => sum + visit.ha1c, 0) / visits.length).toFixed(3)
+                        ));
+                    });
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>HA1C</th>
+        </tr>
+    </thead>
+    <tbody id="patients">
+    </tbody>
+</table>
+</body>
+</html>
